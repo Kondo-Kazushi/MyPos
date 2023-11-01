@@ -12,7 +12,7 @@ import SwiftUI
 struct MyPosApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView2()
+            ContentView()
         }
     }
 }

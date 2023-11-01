@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ContentView2: View {
+struct ContentView: View {
     @State private var orderItems: [OrderItem] = []
     @State private var selectedBentoIndex = 0
     @State private var newQuantity = 0
