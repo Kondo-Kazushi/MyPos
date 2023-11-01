@@ -49,7 +49,7 @@ struct ContentView: View {
                 TableColumn("Quantity") { order in
                     Text("\(order.quantity)")
                 }
-                TableColumn("合計金額") { order in
+                TableColumn("Total") { order in
                     Text("\(order.totalPrice)")
                 }
             }
