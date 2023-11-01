@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var showForm: Bool = true
     @State private var orderItems: [OrderItem] = []
     @State private var newCustomerName = ""
     @State private var selectedCustomerIndex = 0
     @State private var newBentoName = ""
     @State private var selectedBentoIndex = 0
     @State private var recordedDate: String = "None"
-    @State private var newQuantity = 0
+    @State private var newQuantity = 1
     @State private var newPrice = 0
     @State private var newTotalPrice = 0
     @State private var newNote = ""
@@ -20,8 +21,7 @@ struct ContentView: View {
     ]
     
     let customerList: [Customer] = [
-        Customer(name: "選択してください"),
-        Customer(name: "その他"),
+        Customer(name: "入力してください"),
         Customer(name: "日大印刷"),
         Customer(name: "三和"),
         Customer(name: "ジェームス"),
@@ -37,64 +37,83 @@ struct ContentView: View {
     }
     
     var body: some View {
-        Form {
-            Section(header: Text("Order")) {
-                Picker("Customer", selection: $selectedCustomerIndex) {
-                    ForEach(0..<customerList.count, id: \.self) { index in
-                        Text(customerList[index].name)
+        if showForm == true {
+            Form {
+                Section(header: Text("Order")) {
+                    Picker("Customer", selection: $selectedCustomerIndex) {
+                        ForEach(0..<customerList.count, id: \.self) { index in
+                            Text(customerList[index].name)
+                        }
+                    }
+                    if selectedCustomer.name == "入力してください" {
+                        TextField("顧客", text: $newCustomerName)
+                    }
+                    Picker("弁当", selection: $selectedBentoIndex) {
+                        ForEach(0..<bentoList.count, id: \.self) { index in
+                            Text(bentoList[index].name)
+                        }
+                    }
+                    if selectedBento.name == "その他" {
+                        TextField("品名", text: $newBentoName)
+                        TextField("Price", value: $newPrice, formatter: NumberFormatter())
+                    }
+                    HStack {
+                        Stepper("Quantity", value: $newQuantity)
+                        TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50)
+                    }
+                    HStack {
+                        TextField("Note", text: $newNote)
+                        Button {
+                            newNote = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                        }.buttonStyle(.plain)
+                    }
+                    Button("Add") {
+                        let currentDate = Date()
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd" // 任意の日付形式に変更可能
+                        recordedDate = dateFormatter.string(from: currentDate)
+                        if selectedCustomer.name != "入力してください" {
+                            newCustomerName = selectedCustomer.name
+                        }
+                        if selectedBento.name != "その他" {
+                            newBentoName = selectedBento.name
+                            newPrice = selectedBento.basePrice
+                        }
+                        newTotalPrice = newPrice * newQuantity
+                        let newItem = OrderItem(date: recordedDate, customer: selectedCustomer.name, name: newBentoName, quantity: newQuantity, price: newPrice, totalPrice: newTotalPrice, note: newNote)
+                        saveOrderItem(orderItem: newItem)
+                        selectedBentoIndex = 0
+                        newCustomerName = ""
+                        newBentoName = ""
+                        newPrice = 0
+                        newQuantity = 1
+                        newTotalPrice = 0
+                        
                     }
                 }
-                if selectedCustomer.name == "その他" {
-                    TextField("顧客", text: $newCustomerName)
-                }
-                Picker("弁当", selection: $selectedBentoIndex) {
-                    ForEach(0..<bentoList.count, id: \.self) { index in
-                        Text(bentoList[index].name)
-                    }
-                }
-                if selectedBento.name == "その他" {
-                    TextField("品名", text: $newBentoName)
-                    TextField("Price", value: $newPrice, formatter: NumberFormatter())
-                }
-                TextField("Quantity", value: $newQuantity, formatter: NumberFormatter())
-                TextField("Note", text: $newNote)
-                Button("Add") {
-                    let currentDate = Date()
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd" // 任意の日付形式に変更可能
-                    recordedDate = dateFormatter.string(from: currentDate)
-                    if selectedCustomer.name != "その他" {
-                        newCustomerName = selectedCustomer.name
-                    }
-                    if selectedBento.name != "その他" {
-                        newBentoName = selectedBento.name
-                        newPrice = selectedBento.basePrice
-                    }
-                    newTotalPrice = newPrice * newQuantity
-                    let newItem = OrderItem(date: recordedDate, customer: selectedCustomer.name, name: newBentoName, quantity: newQuantity, price: newPrice, totalPrice: newTotalPrice, note: newNote)
-                    saveOrderItem(orderItem: newItem)
-                    selectedCustomerIndex = 0
-                    selectedBentoIndex = 0
-                    newCustomerName = ""
-                    newBentoName = ""
-                    newPrice = 0
-                    newQuantity = 0
-                    newTotalPrice = 0
-                    
-                }
-            }
-        }.padding()
+            }.padding()
+        }
         
-        Section(header: Text("Bento Items")) {
+        Section(header:
+                    HStack {
+            Text("Bento Items")
+            Spacer()
+            Toggle(isOn: $showForm) {
+                Text(showForm ? Image(systemName: "arrow.up.to.line") : Image(systemName: "arrow.down.to.line"))
+            }.toggleStyle(.button)
+        }.padding()
+        ) {
             Table(orderItems) {
                 TableColumn("Date") { order in
                     Text(order.date)
                 }
                 TableColumn("Customer") { order in
-                    Text(order.customer)
+                    Text(order.customer).bold()
                 }
                 TableColumn("Name") { order in
-                    Text(order.name)
+                    Text(order.name).bold()
                 }
                 TableColumn("Price") { order in
                     Text("\(order.price)")
@@ -118,9 +137,11 @@ struct ContentView: View {
             
         }.onAppear {
             loadOrderItems()
-        }
-        .navigationTitle("Order")
+        } .navigationTitle("Order")
+        
     }
+    
+//MARK: Func
     func saveOrderItem(orderItem: OrderItem) {
         do {
             if let data = UserDefaults.standard.data(forKey: "orderItems") {
@@ -160,7 +181,6 @@ struct ContentView: View {
     
     
 }
-
 
 struct OrderItem: Identifiable, Decodable, Encodable {
     var id = UUID()
