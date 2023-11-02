@@ -37,108 +37,206 @@ struct ContentView: View {
     }
     
     var body: some View {
-        if showForm == true {
-            Form {
-                Section(header: Text("Order")) {
-                    Picker("Customer", selection: $selectedCustomerIndex) {
-                        ForEach(0..<customerList.count, id: \.self) { index in
-                            Text(customerList[index].name)
+        NavigationStack {
+            if showForm == true {
+                Form {
+                    Section(header: Text("Order")) {
+                        Picker("Customer", selection: $selectedCustomerIndex) {
+                            ForEach(0..<customerList.count, id: \.self) { index in
+                                Text(customerList[index].name)
+                            }
+                        }
+                        if selectedCustomer.name == "入力してください" {
+                            TextField("顧客", text: $newCustomerName)
+                        }
+                        Picker("弁当", selection: $selectedBentoIndex) {
+                            ForEach(0..<bentoList.count, id: \.self) { index in
+                                Text(bentoList[index].name)
+                            }
+                        }
+                        if selectedBento.name == "その他" {
+                            TextField("品名", text: $newBentoName)
+                            TextField("Price", value: $newPrice, formatter: NumberFormatter())
+                        }
+                        HStack {
+                            Stepper("Quantity", value: $newQuantity)
+                            TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50)
+                        }
+                        HStack {
+                            TextField("Note", text: $newNote)
+                            Button {
+                                newNote = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                            }.buttonStyle(.plain)
+                        }
+                        Button("Add") {
+                            let currentDate = Date()
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "yyyy-MM-dd" // 任意の日付形式に変更可能
+                            recordedDate = dateFormatter.string(from: currentDate)
+                            if selectedCustomer.name != "入力してください" {
+                                newCustomerName = selectedCustomer.name
+                            }
+                            if selectedBento.name != "その他" {
+                                newBentoName = selectedBento.name
+                                newPrice = selectedBento.basePrice
+                            }
+                            newTotalPrice = newPrice * newQuantity
+                            let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, totalPrice: newTotalPrice, note: newNote)
+                            saveOrderItem(orderItem: newItem)
+                            selectedBentoIndex = 0
+                            newCustomerName = ""
+                            newBentoName = ""
+                            newPrice = 0
+                            newQuantity = 1
+                            newTotalPrice = 0
+                            
                         }
                     }
-                    if selectedCustomer.name == "入力してください" {
-                        TextField("顧客", text: $newCustomerName)
-                    }
-                    Picker("弁当", selection: $selectedBentoIndex) {
-                        ForEach(0..<bentoList.count, id: \.self) { index in
-                            Text(bentoList[index].name)
-                        }
-                    }
-                    if selectedBento.name == "その他" {
-                        TextField("品名", text: $newBentoName)
-                        TextField("Price", value: $newPrice, formatter: NumberFormatter())
-                    }
-                    HStack {
-                        Stepper("Quantity", value: $newQuantity)
-                        TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50)
-                    }
-                    HStack {
-                        TextField("Note", text: $newNote)
-                        Button {
-                            newNote = ""
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                        }.buttonStyle(.plain)
-                    }
-                    Button("Add") {
-                        let currentDate = Date()
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyy-MM-dd" // 任意の日付形式に変更可能
-                        recordedDate = dateFormatter.string(from: currentDate)
-                        if selectedCustomer.name != "入力してください" {
-                            newCustomerName = selectedCustomer.name
-                        }
-                        if selectedBento.name != "その他" {
-                            newBentoName = selectedBento.name
-                            newPrice = selectedBento.basePrice
-                        }
-                        newTotalPrice = newPrice * newQuantity
-                        let newItem = OrderItem(date: recordedDate, customer: selectedCustomer.name, name: newBentoName, quantity: newQuantity, price: newPrice, totalPrice: newTotalPrice, note: newNote)
-                        saveOrderItem(orderItem: newItem)
-                        selectedBentoIndex = 0
-                        newCustomerName = ""
-                        newBentoName = ""
-                        newPrice = 0
-                        newQuantity = 1
-                        newTotalPrice = 0
-                        
-                    }
-                }
-            }.padding()
-        }
-        
-        Section(header:
-                    HStack {
-            Text("Bento Items")
-            Spacer()
-            Toggle(isOn: $showForm) {
-                Text(showForm ? Image(systemName: "arrow.up.to.line") : Image(systemName: "arrow.down.to.line"))
-            }.toggleStyle(.button)
-        }.padding()
-        ) {
-            Table(orderItems) {
-                TableColumn("Date") { order in
-                    Text(order.date)
-                }
-                TableColumn("Customer") { order in
-                    Text(order.customer).bold()
-                }
-                TableColumn("Name") { order in
-                    Text(order.name).bold()
-                }
-                TableColumn("Price") { order in
-                    Text("\(order.price)")
-                }
-                TableColumn("Quantity") { order in
-                    Text("\(order.quantity)")
-                }
-                TableColumn("Total") { order in
-                    Text("\(order.totalPrice)")
-                }
-                TableColumn("Note") { order in
-                    Text("\(order.note)")
-                }
-                TableColumn("") { order in
-                    Button("Delete") {
-                        // 削除ボタンをタップしたときの処理を追加
-                        deleteOrderItem(order)
-                    }
-                }
+                }.padding()
             }
             
-        }.onAppear {
-            loadOrderItems()
-        } .navigationTitle("Order")
-        
+            Section(header:
+                        HStack {
+                Text("Bento Items")
+                Spacer()
+                Toggle(isOn: $showForm) {
+                    Text(showForm ? Image(systemName: "arrow.up.to.line") : Image(systemName: "arrow.down.to.line"))
+                }.toggleStyle(.button)
+            }.padding()
+            ) {
+                Table(orderItems) {
+                    TableColumn("Date") { order in
+                        NavigationLink {
+                            VStack {
+                                Table(orderItems.filter {$0.date == order.date}) {
+                                    TableColumn("Date") { oeder in
+                                        Text(order.date)
+                                    }
+                                    TableColumn("Customer") { order in
+                                        Text(order.customer).bold()
+                                    }
+                                    TableColumn("Name") { order in
+                                        Text(order.name).bold()
+                                    }
+                                    TableColumn("Price") { order in
+                                        Text("\(order.price)")
+                                    }
+                                    TableColumn("Quantity") { order in
+                                        Text("\(order.quantity)")
+                                    }
+                                    TableColumn("Total") { order in
+                                        Text("\(order.totalPrice)")
+                                    }
+                                    TableColumn("Note") { order in
+                                        Text("\(order.note)")
+                                    }
+                                    TableColumn("") { order in
+                                        Button("Delete") {
+                                            // 削除ボタンをタップしたときの処理を追加
+                                            deleteOrderItem(order)
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Text(order.date)
+                        }
+                    }
+                    TableColumn("Customer") { order in
+                        NavigationLink {
+                            VStack {
+                                Table(orderItems.filter {$0.customer == order.customer}) {
+                                    TableColumn("Customer") { order in
+                                        Text(order.customer).bold()
+                                    }
+                                    TableColumn("Name") { order in
+                                        Text(order.name).bold()
+                                    }
+                                    TableColumn("Price") { order in
+                                        Text("\(order.price)")
+                                    }
+                                    TableColumn("Quantity") { order in
+                                        Text("\(order.quantity)")
+                                    }
+                                    TableColumn("Total") { order in
+                                        Text("\(order.totalPrice)")
+                                    }
+                                    TableColumn("Note") { order in
+                                        Text("\(order.note)")
+                                    }
+                                    TableColumn("") { order in
+                                        Button("Delete") {
+                                            // 削除ボタンをタップしたときの処理を追加
+                                            deleteOrderItem(order)
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Text(order.customer).bold()
+                        }
+
+                    }
+                    TableColumn("Name") { order in
+                        NavigationLink {
+                            VStack {
+                                Table(orderItems.filter {$0.name == order.name}) {
+                                    TableColumn("Customer") { order in
+                                        Text(order.customer).bold()
+                                    }
+                                    TableColumn("Name") { order in
+                                        Text(order.name).bold()
+                                    }
+                                    TableColumn("Price") { order in
+                                        Text("\(order.price)")
+                                    }
+                                    TableColumn("Quantity") { order in
+                                        Text("\(order.quantity)")
+                                    }
+                                    TableColumn("Total") { order in
+                                        Text("\(order.totalPrice)")
+                                    }
+                                    TableColumn("Note") { order in
+                                        Text("\(order.note)")
+                                    }
+                                    TableColumn("") { order in
+                                        Button("Delete") {
+                                            // 削除ボタンをタップしたときの処理を追加
+                                            deleteOrderItem(order)
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Text(order.name).bold()
+                        }
+                    }
+                    TableColumn("Price") { order in
+                        Text("\(order.price)")
+                    }
+                    TableColumn("Quantity") { order in
+                        Text("\(order.quantity)")
+                    }
+                    TableColumn("Total") { order in
+                        Text("\(order.totalPrice)")
+                    }
+                    TableColumn("Note") { order in
+                        Text("\(order.note)")
+                    }
+                    TableColumn("") { order in
+                        Button("Delete") {
+                            // 削除ボタンをタップしたときの処理を追加
+                            deleteOrderItem(order)
+                        }
+                    }
+                }
+                
+            }.onAppear {
+                loadOrderItems()
+            } .navigationTitle("Order")
+        }
     }
     
 //MARK: Func
