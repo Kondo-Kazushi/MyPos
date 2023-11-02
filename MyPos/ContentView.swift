@@ -123,68 +123,76 @@ struct ContentView: View {
         NavigationView {
             HStack {
                 if showForm == true {
-                    Form {
-                        Section(header: Text("Order")) {
-                            Picker("Customer", selection: $selectedCustomerIndex) {
-                                ForEach(0..<customerList.count, id: \.self) { index in
-                                    Text(customerList[index].name)
+                    VStack {
+                        Form {
+                            Section(header: Text("Order")) {
+                                Picker("Customer", selection: $selectedCustomerIndex) {
+                                    ForEach(0..<customerList.count, id: \.self) { index in
+                                        Text(customerList[index].name)
+                                    }
                                 }
-                            }
-                            if selectedCustomer.name == "入力してください" {
-                                TextField("顧客", text: $newCustomerName)
-                            }
-                            Picker("弁当", selection: $selectedBentoIndex) {
-                                ForEach(0..<bentoList.count, id: \.self) { index in
-                                    Text(bentoList[index].name)
+                                if selectedCustomer.name == "入力してください" {
+                                    TextField("顧客", text: $newCustomerName)
                                 }
-                            }
-                            if selectedBento.name == "その他" {
-                                TextField("品名", text: $newBentoName)
-                                TextField("Price", value: $newPrice, formatter: NumberFormatter())
-                            }
-                            Toggle("イートイン", isOn: $eatin)
-                            HStack {
-                                Stepper("Quantity", value: $newQuantity)
-                                TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50).textFieldStyle(RoundedBorderTextFieldStyle())
-                            }
-                            HStack {
-                                TextField("Note", text: $newNote)
-                                Button {
-                                    newNote = ""
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                }.buttonStyle(.plain)
-                            }
-                            Button("Add") {
-                                let currentDate = Date()
-                                let dateFormatter = DateFormatter()
-                                dateFormatter.dateFormat = "yyyy-MM-dd"
-                                recordedDate = dateFormatter.string(from: currentDate)
-                                recordedDateSmall = dateFormatter.string(from: currentDate)
-                                if selectedCustomer.name != "入力してください" {
-                                    newCustomerName = selectedCustomer.name
-                                } else if newCustomerName == "" {
-                                    newCustomerName = "名前なし"
+                                Picker("弁当", selection: $selectedBentoIndex) {
+                                    ForEach(0..<bentoList.count, id: \.self) { index in
+                                        Text(bentoList[index].name)
+                                    }
                                 }
-                                if selectedBento.name != "その他" {
-                                    newBentoName = selectedBento.name
-                                    newPrice = selectedBento.basePrice
+                                if selectedBento.name == "その他" {
+                                    TextField("品名", text: $newBentoName)
+                                    TextField("Price", value: $newPrice, formatter: NumberFormatter())
                                 }
-                                if eatin == true {
-                                    newTaxRate = 10
-                                } else {
-                                    newTaxRate = 8
+                                Toggle("イートイン", isOn: $eatin)
+                                HStack {
+                                    Stepper("Quantity", value: $newQuantity)
+                                    TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50).textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
-                                newTotalPrice = newPrice * newQuantity
-                                let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
-                                saveOrderItem(orderItem: newItem)
-                                selectedBentoIndex = 0
-                                newCustomerName = ""
-                                newBentoName = ""
-                                newPrice = 0
-                                newQuantity = 1
-                                newTotalPrice = 0
-                            }.keyboardShortcut(.defaultAction)
+                                HStack {
+                                    TextField("Note", text: $newNote)
+                                    Button {
+                                        newNote = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                    }.buttonStyle(.plain)
+                                }
+                                Button("Add") {
+                                    let currentDate = Date()
+                                    let dateFormatter = DateFormatter()
+                                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                                    recordedDate = dateFormatter.string(from: currentDate)
+                                    recordedDateSmall = dateFormatter.string(from: currentDate)
+                                    if selectedCustomer.name != "入力してください" {
+                                        newCustomerName = selectedCustomer.name
+                                    } else if newCustomerName == "" {
+                                        newCustomerName = "名前なし"
+                                    }
+                                    if selectedBento.name != "その他" {
+                                        newBentoName = selectedBento.name
+                                        newPrice = selectedBento.basePrice
+                                    }
+                                    if eatin == true {
+                                        newTaxRate = 10
+                                    } else {
+                                        newTaxRate = 8
+                                    }
+                                    newTotalPrice = newPrice * newQuantity
+                                    let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
+                                    saveOrderItem(orderItem: newItem)
+                                    selectedBentoIndex = 0
+                                    newCustomerName = ""
+                                    newBentoName = ""
+                                    newPrice = 0
+                                    newQuantity = 1
+                                    newTotalPrice = 0
+                                }.keyboardShortcut(.defaultAction)
+                            }
+                        }
+                        Button("Delete All Userdefaults") {
+                            orderItems.removeAll()
+                            if let newData = try? JSONEncoder().encode(orderItems) {
+                                UserDefaults.standard.set(newData, forKey: "orderItems")
+                            }
                         }
                     }.clipShape(RoundedRectangle(cornerRadius: 15)).padding()
                 }
@@ -428,6 +436,7 @@ struct ContentView: View {
             
         }
     }
+    
     
     
 }
