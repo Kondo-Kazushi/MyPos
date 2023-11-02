@@ -16,12 +16,12 @@ struct ContentView: View {
     @State private var newPrice = 0
     @State private var newTotalPrice = 0
     @State private var newNote = ""
-    @State private var tax10 = 0
+    @State private var tax10: Double = 0.0
     @State private var tax10include = 0
     @State private var tax10notInclude = 0
-    @State private var tax8 = 0
+    @State private var tax8: Double = 0.0
     @State private var tax8include = 0
-    @State private var ta8notInclude = 0
+    @State private var tax8notInclude = 0
     
     let bentoList: [BentoItem] = [
         BentoItem(name: "ランチ", basePrice: 350),
@@ -180,10 +180,40 @@ struct ContentView: View {
                                         TableColumn("Total") { order in
                                             Text("\(order.totalPrice)")
                                         }
+                                        TableColumn("Tax") { order in
+                                            Text("\(order.taxRate)%")
+                                        }
                                         TableColumn("Note") { order in
                                             Text("\(order.note)")
                                         }
                                     }
+                                    Grid {
+                                        GridRow {
+                                            Text("税率")
+                                            Text("税抜価格")
+                                            Text("税金")
+                                            Text("税込価格")
+                                        }
+                                        GridRow {
+                                            Text("8%")
+                                            Text("\(tax8notInclude)")
+                                            Text(String(format: "%.1f", tax8))
+                                            Text("\(tax8include)")
+                                        }
+                                        GridRow {
+                                            Text("10%")
+                                            Text("\(tax10notInclude)")
+                                            Text(String(format: "%.1f", tax10))
+                                            Text("\(tax10include)")
+                                        }
+                                    }.padding()
+                                }.onAppear {
+                                    tax8include = orderItems.filter { $0.taxRate == 8 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax8 = Double(tax8include) * 1.08 - Double(tax8include)
+                                    tax8notInclude = tax8include - Int(tax8)
+                                    tax10include = orderItems.filter { $0.taxRate == 10 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax10 = Double(tax10include) * 1.1 - Double(tax10include)
+                                    tax10notInclude = tax10include - Int(tax10)
                                 }
                             } label: {
                                 Text(order.customer).bold()
@@ -215,7 +245,6 @@ struct ContentView: View {
                                         }
                                         TableColumn("") { order in
                                             Button("Delete") {
-                                                // 削除ボタンをタップしたときの処理を追加
                                                 deleteOrderItem(order)
                                             }
                                         }
@@ -228,6 +257,12 @@ struct ContentView: View {
                         
                         TableColumn("Price") { order in
                             Text("\(order.price)")
+                        }
+                        TableColumn("Quantity") { order in
+                            Text("\(order.quantity)")
+                        }
+                        TableColumn("Total") { order in
+                            Text("\(order.totalPrice)")
                         }
                         TableColumn("Tax") { order in
                             NavigationLink {
@@ -268,12 +303,6 @@ struct ContentView: View {
                             } label: {
                                 Text("\(order.taxRate)%").bold()
                             }
-                        }
-                        TableColumn("Quantity") { order in
-                            Text("\(order.quantity)")
-                        }
-                        TableColumn("Total") { order in
-                            Text("\(order.totalPrice)")
                         }
                         TableColumn("Note") { order in
                             Text("\(order.note)")
@@ -329,6 +358,8 @@ struct ContentView: View {
             
         }
     }
+    
+    
 }
 
 struct OrderItem: Identifiable, Decodable, Encodable {
