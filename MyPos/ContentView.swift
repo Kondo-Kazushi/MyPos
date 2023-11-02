@@ -8,10 +8,20 @@ struct ContentView: View {
     @State private var newBentoName = ""
     @State private var selectedBentoIndex = 0
     @State private var recordedDate: String = "None"
+    @State private var recordedDateSmall: String = "None"
     @State private var newQuantity = 1
+    @State private var eatin: Bool = false
+    @State private var newTaxRate = 8
+    @State private var newTax = 0
     @State private var newPrice = 0
     @State private var newTotalPrice = 0
     @State private var newNote = ""
+    @State private var tax10 = 0
+    @State private var tax10include = 0
+    @State private var tax10notInclude = 0
+    @State private var tax8 = 0
+    @State private var tax8include = 0
+    @State private var ta8notInclude = 0
     
     let bentoList: [BentoItem] = [
         BentoItem(name: "ランチ", basePrice: 350),
@@ -62,6 +72,7 @@ struct ContentView: View {
                                 TextField("品名", text: $newBentoName)
                                 TextField("Price", value: $newPrice, formatter: NumberFormatter())
                             }
+                            Toggle("イートイン", isOn: $eatin)
                             HStack {
                                 Stepper("Quantity", value: $newQuantity)
                                 TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -77,8 +88,9 @@ struct ContentView: View {
                             Button("Add") {
                                 let currentDate = Date()
                                 let dateFormatter = DateFormatter()
-                                dateFormatter.dateFormat = "yyyy-MM-dd" // 任意の日付形式に変更可能
+                                dateFormatter.dateFormat = "yyyy-MM-dd"
                                 recordedDate = dateFormatter.string(from: currentDate)
+                                recordedDateSmall = dateFormatter.string(from: currentDate)
                                 if selectedCustomer.name != "入力してください" {
                                     newCustomerName = selectedCustomer.name
                                 } else if newCustomerName == "" {
@@ -88,8 +100,13 @@ struct ContentView: View {
                                     newBentoName = selectedBento.name
                                     newPrice = selectedBento.basePrice
                                 }
+                                if eatin == true {
+                                    newTaxRate = 10
+                                } else {
+                                    newTaxRate = 8
+                                }
                                 newTotalPrice = newPrice * newQuantity
-                                let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, totalPrice: newTotalPrice, note: newNote)
+                                let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
                                 saveOrderItem(orderItem: newItem)
                                 selectedBentoIndex = 0
                                 newCustomerName = ""
@@ -97,8 +114,7 @@ struct ContentView: View {
                                 newPrice = 0
                                 newQuantity = 1
                                 newTotalPrice = 0
-                                
-                            }
+                            }.keyboardShortcut(.defaultAction)
                         }
                     }.clipShape(RoundedRectangle(cornerRadius: 15)).padding()
                 }
@@ -209,8 +225,49 @@ struct ContentView: View {
                                 Text(order.name).bold()
                             }
                         }
+                        
                         TableColumn("Price") { order in
                             Text("\(order.price)")
+                        }
+                        TableColumn("Tax") { order in
+                            NavigationLink {
+                                VStack {
+                                    HStack {
+                                        Text("\(order.taxRate)%").font(.title2).bold()
+                                        if order.taxRate == 8 {Text("配達・テイクアウト")} else { Text("イートイン") }
+                                    }
+                                    Table(orderItems.filter {$0.tax == order.tax}) {
+                                        TableColumn("Date") { oeder in
+                                            Text(order.date)
+                                        }
+                                        TableColumn("Customer") { order in
+                                            Text("\(order.customer)")
+                                        }
+                                        TableColumn("商品名") { order in
+                                            Text("\(order.name)")
+                                        }
+                                        TableColumn("Price") { order in
+                                            Text("\(order.price)")
+                                        }
+                                        TableColumn("Quantity") { order in
+                                            Text("\(order.quantity)")
+                                        }
+                                        TableColumn("Total") { order in
+                                            Text("\(order.totalPrice)")
+                                        }
+                                        TableColumn("Note") { order in
+                                            Text("\(order.note)")
+                                        }
+                                        TableColumn("Edit") { order in
+                                            Button("Delete") {
+                                                deleteOrderItem(order)
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Text("\(order.taxRate)%").bold()
+                            }
                         }
                         TableColumn("Quantity") { order in
                             Text("\(order.quantity)")
@@ -223,10 +280,9 @@ struct ContentView: View {
                         }
                         TableColumn("Edit") { order in
                             Button("Delete") {
-                                // 削除ボタンをタップしたときの処理を追加
                                 deleteOrderItem(order)
                             }
-                        }
+                        }.width(70)
                     }
                 }
                 
@@ -282,6 +338,8 @@ struct OrderItem: Identifiable, Decodable, Encodable {
     var name: String
     var quantity: Int
     var price: Int
+    var taxRate: Int
+    var tax: Int
     var totalPrice: Int
     var note: String
 }
