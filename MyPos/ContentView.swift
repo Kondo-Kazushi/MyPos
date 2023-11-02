@@ -7,6 +7,8 @@ struct ContentView: View {
     @State private var selectedCustomerIndex = 0
     @State private var newBentoName = ""
     @State private var selectedBentoIndex = 0
+    @State private var newSize = "普通"
+    @State private var newCustomValue = 0
     @State private var recordedDate: String = "None"
     @State private var recordedDateSmall: String = "None"
     @State private var newQuantity = 1
@@ -35,7 +37,7 @@ struct ContentView: View {
         BentoItem(name: "うなぎ弁当", basePrice: 700),
         BentoItem(name: "DXのり弁当", basePrice: 380),
         BentoItem(name: "のり弁", basePrice: 330),
-        BentoItem(name: "DCてりやき弁当", basePrice: 480),
+        BentoItem(name: "DXてりやき弁当", basePrice: 480),
         BentoItem(name: "DXエビ＆ハンバーグ弁当", basePrice: 500),
         BentoItem(name: "エビ＆ハンバーグ弁当", basePrice: 480),
         BentoItem(name: "DXハンバーグ弁当", basePrice: 430),
@@ -103,8 +105,17 @@ struct ContentView: View {
         BentoItem(name: "（おかか）おにぎり", basePrice: 100)
     ]
     
+    let customList: [Custom] = [
+        Custom(name: "普通", value: 0),
+        Custom(name: "大盛り", value: 50),
+        Custom(name: "小盛り", value: -50),
+        Custom(name: "おかず大盛り", value: 100),
+        Custom(name: "両大", value: 150)
+    ]
+    
     let customerList: [Customer] = [
         Customer(name: "入力してください"),
+        Customer(name: "店内"),
         Customer(name: "日大印刷"),
         Customer(name: "三和"),
         Customer(name: "ジェームス"),
@@ -143,18 +154,29 @@ struct ContentView: View {
                                     TextField("品名", text: $newBentoName)
                                     TextField("Price", value: $newPrice, formatter: NumberFormatter())
                                 }
-                                Toggle("イートイン", isOn: $eatin)
+                                Picker("カスタム", selection: $newSize) {
+                                    ForEach(customList, id: \.name) { custom in
+                                        Text(custom.name)
+                                    }
+                                }.pickerStyle(.segmented)
+                                if selectedCustomer.name == "店内" {
+                                    Text("イートイン　消費税率10％")
+                                } else {
+                                    Toggle("イートイン", isOn: $eatin)
+                                }
                                 HStack {
                                     Stepper("Quantity", value: $newQuantity)
                                     TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50).textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
                                 HStack {
                                     TextField("Note", text: $newNote)
-                                    Button {
-                                        newNote = ""
-                                    } label: {
-                                        Image(systemName: "xmark.circle.fill")
-                                    }.buttonStyle(.plain)
+                                    if newNote != "" {
+                                        Button {
+                                            newNote = ""
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                        }.buttonStyle(.plain)
+                                    }
                                 }
                                 Button("Add") {
                                     let currentDate = Date()
@@ -167,6 +189,10 @@ struct ContentView: View {
                                     } else if newCustomerName == "" {
                                         newCustomerName = "名前なし"
                                     }
+                                    
+                                    if newCustomerName == "店内" {
+                                        self.eatin = true
+                                    }
                                     if selectedBento.name != "その他" {
                                         newBentoName = selectedBento.name
                                         newPrice = selectedBento.basePrice
@@ -176,8 +202,12 @@ struct ContentView: View {
                                     } else {
                                         newTaxRate = 8
                                     }
+                                    if let selectedCustom = customList.first(where: { $0.name == newSize }) {
+                                            newCustomValue = selectedCustom.value
+                                            newPrice += newCustomValue
+                                        }
                                     newTotalPrice = newPrice * newQuantity
-                                    let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
+                                    let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, size: newSize, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
                                     saveOrderItem(orderItem: newItem)
                                     selectedBentoIndex = 0
                                     newCustomerName = ""
@@ -185,6 +215,8 @@ struct ContentView: View {
                                     newPrice = 0
                                     newQuantity = 1
                                     newTotalPrice = 0
+                                    newSize = "普通"
+                                    newCustomValue = 0
                                 }.keyboardShortcut(.defaultAction)
                             }
                         }
@@ -218,6 +250,9 @@ struct ContentView: View {
                                         TableColumn("Name") { order in
                                             Text(order.name).bold()
                                         }
+                                        TableColumn("カスタム") { order in
+                                            Text("\(order.size)")
+                                        }
                                         TableColumn("Price") { order in
                                             Text("\(order.price)")
                                         }
@@ -248,6 +283,9 @@ struct ContentView: View {
                                         }
                                         TableColumn("Name") { order in
                                             Text(order.name).bold()
+                                        }
+                                        TableColumn("カスタム") { order in
+                                            Text("\(order.size)")
                                         }
                                         TableColumn("Price") { order in
                                             Text("\(order.price)")
@@ -284,7 +322,7 @@ struct ContentView: View {
                                             Text(String(format: "%.1f", tax10))
                                             Text("\(tax10include)")
                                         }
-                                    }.padding()
+                                    }.padding().font(.title3)
                                 }.onAppear {
                                     tax8include = orderItems.filter { $0.taxRate == 8 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
                                     tax8 = Double(tax8include) * 1.08 - Double(tax8include)
@@ -296,7 +334,6 @@ struct ContentView: View {
                             } label: {
                                 Text(order.customer).bold()
                             }
-                            
                         }
                         TableColumn("Name") { order in
                             NavigationLink {
@@ -312,6 +349,12 @@ struct ContentView: View {
                                         TableColumn("Customer") { order in
                                             Text(order.customer).bold()
                                         }
+                                        TableColumn("カスタム") { order in
+                                            Text("\(order.size)")
+                                        }
+                                        TableColumn("Price") { order in
+                                            Text("\(order.price)")
+                                        }
                                         TableColumn("Quantity") { order in
                                             Text("\(order.quantity)")
                                         }
@@ -321,18 +364,15 @@ struct ContentView: View {
                                         TableColumn("Note") { order in
                                             Text("\(order.note)")
                                         }
-                                        TableColumn("") { order in
-                                            Button("Delete") {
-                                                deleteOrderItem(order)
-                                            }
-                                        }
                                     }
                                 }
                             } label: {
                                 Text(order.name).bold()
                             }
                         }
-                        
+                        TableColumn("カスタム") { order in
+                            Text("\(order.size)")
+                        }
                         TableColumn("Price") { order in
                             Text("\(order.price)")
                         }
@@ -349,7 +389,7 @@ struct ContentView: View {
                                         Text("\(order.taxRate)%").font(.title2).bold()
                                         if order.taxRate == 8 {Text("配達・テイクアウト")} else { Text("イートイン") }
                                     }
-                                    Table(orderItems.filter {$0.tax == order.tax}) {
+                                    Table(orderItems.filter {$0.taxRate == order.taxRate}) {
                                         TableColumn("Date") { oeder in
                                             Text(order.date)
                                         }
@@ -371,12 +411,34 @@ struct ContentView: View {
                                         TableColumn("Note") { order in
                                             Text("\(order.note)")
                                         }
-                                        TableColumn("Edit") { order in
-                                            Button("Delete") {
-                                                deleteOrderItem(order)
+                                    }
+                                    Grid {
+                                        GridRow {
+                                            Text("税率")
+                                            Text("税抜価格")
+                                            Text("税金")
+                                            Text("税込価格")
+                                        }
+                                        GridRow {
+                                            Text("\(order.taxRate)")
+                                            if order.taxRate == 8 {
+                                                Text("\(tax8notInclude)")
+                                                Text(String(format: "%.1f", tax8))
+                                                Text("\(tax8include)")
+                                            } else {
+                                                Text("\(tax10notInclude)")
+                                                Text(String(format: "%.1f", tax10))
+                                                Text("\(tax10include)")
                                             }
                                         }
-                                    }
+                                    }.padding().font(.title3)
+                                }.onAppear {
+                                    tax8include = orderItems.filter { $0.taxRate == 8 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax8 = Double(tax8include) * 1.08 - Double(tax8include)
+                                    tax8notInclude = tax8include - Int(tax8)
+                                    tax10include = orderItems.filter { $0.taxRate == 10 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax10 = Double(tax10include) * 1.1 - Double(tax10include)
+                                    tax10notInclude = tax10include - Int(tax10)
                                 }
                             } label: {
                                 Text("\(order.taxRate)%").bold()
@@ -446,6 +508,7 @@ struct OrderItem: Identifiable, Decodable, Encodable {
     var date: String
     var customer: String
     var name: String
+    var size: String
     var quantity: Int
     var price: Int
     var taxRate: Int
@@ -461,4 +524,9 @@ struct BentoItem {
 
 struct Customer {
     var name: String
+}
+
+struct Custom {
+    var name: String
+    var value: Int
 }
