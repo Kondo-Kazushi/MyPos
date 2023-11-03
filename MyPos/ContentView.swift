@@ -24,85 +24,87 @@ struct ContentView: View {
     @State private var tax8: Double = 0.0
     @State private var tax8include = 0
     @State private var tax8notInclude = 0
+    @State private var addViewStyle = 1
+    @State private var selectedBentoMenu = "ランチ" //MenuViewOnly
     
     let bentoList: [BentoItem] = [
-        BentoItem(name: "ランチ", basePrice: 380),
-        BentoItem(name: "その他", basePrice: 0),
-        BentoItem(name: "特上幕の内弁当(五目弁当)", basePrice: 600),
-        BentoItem(name: "DX幕の内弁当", basePrice: 500),
-        BentoItem(name: "幕の内弁当", basePrice: 400),
-        BentoItem(name: "幕の外弁当", basePrice: 350),
-        BentoItem(name: "DXくっく弁当", basePrice: 600),
-        BentoItem(name: "くっく弁当", basePrice: 500),
-        BentoItem(name: "うなぎ弁当", basePrice: 700),
-        BentoItem(name: "DXのり弁当", basePrice: 380),
-        BentoItem(name: "のり弁", basePrice: 330),
-        BentoItem(name: "DXてりやき弁当", basePrice: 480),
-        BentoItem(name: "DXエビ＆ハンバーグ弁当", basePrice: 500),
-        BentoItem(name: "エビ＆ハンバーグ弁当", basePrice: 480),
-        BentoItem(name: "DXハンバーグ弁当", basePrice: 430),
-        BentoItem(name: "ハンバーグ弁当", basePrice: 380),
-        BentoItem(name: "SPハンバーグ弁当", basePrice: 580),
-        BentoItem(name: "ロコモコハンバーグ", basePrice: 400),
-        BentoItem(name: "鮭弁当", basePrice: 330),
-        BentoItem(name: "コロッケ弁当", basePrice: 300),
-        BentoItem(name: "酢豚弁当", basePrice: 600),
-        BentoItem(name: "エビフライ弁当", basePrice: 500),
-        BentoItem(name: "カキフライ弁当", basePrice: 400),
-        BentoItem(name: "唐揚げ弁当", basePrice: 400),
-        BentoItem(name: "とり天弁当", basePrice: 400),
-        BentoItem(name: "野菜炒め弁当", basePrice: 400),
-        BentoItem(name: "サバ弁当", basePrice: 400),
-        BentoItem(name: "カニクリームコロッケ弁当", basePrice: 40),
-        BentoItem(name: "ヒレカツ", basePrice: 680),
-        BentoItem(name: "お好み弁当", basePrice: 500),
-        BentoItem(name: "みそ串カツ弁当", basePrice: 450),
-        BentoItem(name: "（味噌）ロースカツ弁当", basePrice: 500),
-        BentoItem(name: "（ソース）ロースカツ弁当", basePrice: 500),
-        BentoItem(name: "（味噌）プレミアムロースカツ弁当", basePrice: 680),
-        BentoItem(name: "（ソース）プレミアムロースカツ弁当", basePrice: 680),
-        BentoItem(name: "お子様弁当", basePrice: 350),
-        BentoItem(name: "シューマイ弁当", basePrice: 500),
-        BentoItem(name: "チキンカツ弁当", basePrice: 500),
-        BentoItem(name: "DX焼きうどん弁当", basePrice: 450),
-        BentoItem(name: "焼きうどん弁当", basePrice: 380),
-        BentoItem(name: "DX焼きそば弁当", basePrice: 450),
-        BentoItem(name: "焼きそば弁当", basePrice: 380),
-        BentoItem(name: "DX焼肉弁当", basePrice: 500),
-        BentoItem(name: "焼肉弁当", basePrice: 400),
-        BentoItem(name: "牛肉スタミナ弁当", basePrice: 550),
-        BentoItem(name: "豚肉生姜焼き弁当", basePrice: 500),
-        BentoItem(name: "牛モツ元気弁当", basePrice: 550),
-        BentoItem(name: "チキン南蛮弁当", basePrice: 500),
-        BentoItem(name: "カレーうどん", basePrice: 480),
-        BentoItem(name: "カレーライス", basePrice: 380),
-        BentoItem(name: "カツカレー", basePrice: 600),
-        BentoItem(name: "エビカレー", basePrice: 550),
-        BentoItem(name: "ハンバーグカレー", basePrice: 550),
-        BentoItem(name: "コロッケカレー", basePrice: 400),
-        BentoItem(name: "唐揚げカレー", basePrice: 580),
-        BentoItem(name: "四川麻婆豆腐丼", basePrice: 450),
-        BentoItem(name: "玉子丼", basePrice: 400),
-        BentoItem(name: "カツ丼", basePrice: 580),
-        BentoItem(name: "天丼", basePrice: 550),
-        BentoItem(name: "親子丼", basePrice: 450),
-        BentoItem(name: "カルビ丼", basePrice: 500),
-        BentoItem(name: "中華丼", basePrice: 550),
-        BentoItem(name: "天津丼", basePrice: 500),
-        BentoItem(name: "牛丼", basePrice: 480),
-        BentoItem(name: "豚メンマ丼", basePrice: 450),
-        BentoItem(name: "エビピラフ", basePrice: 400),
-        BentoItem(name: "高菜ピラフ", basePrice: 400),
-        BentoItem(name: "チキンピラフ", basePrice: 400),
-        BentoItem(name: "ドライカレーピラフ", basePrice: 400),
-        BentoItem(name: "鮭ご飯", basePrice: 350),
-        BentoItem(name: "五目ご飯", basePrice: 380),
-        BentoItem(name: "（鮭）おにぎり", basePrice: 100),
-        BentoItem(name: "（昆布）おにぎり", basePrice: 100),
-        BentoItem(name: "（しぐれ）おにぎり", basePrice: 100),
-        BentoItem(name: "（うめ）おにぎり", basePrice: 100),
-        BentoItem(name: "（たらこ）おにぎり", basePrice: 100),
-        BentoItem(name: "（おかか）おにぎり", basePrice: 100)
+        BentoItem(name: "ランチ", abbreviation: "ランチ", basePrice: 380),
+        BentoItem(name: "その他", abbreviation: "その他", basePrice: 0),
+        BentoItem(name: "特上幕の内弁当(五目弁当)", abbreviation: "特上幕の内", basePrice: 600),
+        BentoItem(name: "DX幕の内弁当", abbreviation: "DX幕の内", basePrice: 500),
+        BentoItem(name: "幕の内弁当", abbreviation: "幕の内", basePrice: 400),
+        BentoItem(name: "幕の外弁当", abbreviation: "幕の外", basePrice: 350),
+        BentoItem(name: "DXくっく弁当", abbreviation: "DXくっく", basePrice: 600),
+        BentoItem(name: "くっく弁当", abbreviation: "くっく", basePrice: 500),
+        BentoItem(name: "うなぎ弁当", abbreviation: "うなぎ", basePrice: 700),
+        BentoItem(name: "DXのり弁当", abbreviation: "DXのり弁", basePrice: 380),
+        BentoItem(name: "のり弁", abbreviation: "のり弁", basePrice: 330),
+        BentoItem(name: "DXてりやき弁当", abbreviation: "DXてり", basePrice: 480),
+        BentoItem(name: "DXエビ＆ハンバーグ弁当", abbreviation: "DXえびハ", basePrice: 500),
+        BentoItem(name: "エビ＆ハンバーグ弁当", abbreviation: "エビハン", basePrice: 480),
+        BentoItem(name: "DXハンバーグ弁当", abbreviation: "DXハン", basePrice: 430),
+        BentoItem(name: "ハンバーグ弁当", abbreviation: "ハンバーグ", basePrice: 380),
+        BentoItem(name: "SPハンバーグ弁当", abbreviation: "SPハン", basePrice: 580),
+        BentoItem(name: "ロコモコハンバーグ", abbreviation: "ロコモコ", basePrice: 400),
+        BentoItem(name: "鮭弁当", abbreviation: "鮭弁当", basePrice: 330),
+        BentoItem(name: "コロッケ弁当", abbreviation: "コロッケ", basePrice: 300),
+        BentoItem(name: "酢豚弁当", abbreviation: "酢豚", basePrice: 600),
+        BentoItem(name: "エビフライ弁当", abbreviation: "エビフライ", basePrice: 500),
+//        BentoItem(name: "カキフライ弁当", basePrice: 400),
+//        BentoItem(name: "唐揚げ弁当", basePrice: 400),
+//        BentoItem(name: "とり天弁当", basePrice: 400),
+//        BentoItem(name: "野菜炒め弁当", basePrice: 400),
+//        BentoItem(name: "サバ弁当", basePrice: 400),
+//        BentoItem(name: "カニクリームコロッケ弁当", basePrice: 40),
+//        BentoItem(name: "ヒレカツ", basePrice: 680),
+//        BentoItem(name: "お好み弁当", basePrice: 500),
+//        BentoItem(name: "みそ串カツ弁当", basePrice: 450),
+//        BentoItem(name: "（味噌）ロースカツ弁当", basePrice: 500),
+//        BentoItem(name: "（ソース）ロースカツ弁当", basePrice: 500),
+//        BentoItem(name: "（味噌）プレミアムロースカツ弁当", basePrice: 680),
+//        BentoItem(name: "（ソース）プレミアムロースカツ弁当", basePrice: 680),
+//        BentoItem(name: "お子様弁当", basePrice: 350),
+//        BentoItem(name: "シューマイ弁当", basePrice: 500),
+//        BentoItem(name: "チキンカツ弁当", basePrice: 500),
+//        BentoItem(name: "DX焼きうどん弁当", basePrice: 450),
+//        BentoItem(name: "焼きうどん弁当", basePrice: 380),
+//        BentoItem(name: "DX焼きそば弁当", basePrice: 450),
+//        BentoItem(name: "焼きそば弁当", basePrice: 380),
+//        BentoItem(name: "DX焼肉弁当", basePrice: 500),
+//        BentoItem(name: "焼肉弁当", basePrice: 400),
+//        BentoItem(name: "牛肉スタミナ弁当", basePrice: 550),
+//        BentoItem(name: "豚肉生姜焼き弁当", basePrice: 500),
+//        BentoItem(name: "牛モツ元気弁当", basePrice: 550),
+//        BentoItem(name: "チキン南蛮弁当", basePrice: 500),
+//        BentoItem(name: "カレーうどん", basePrice: 480),
+//        BentoItem(name: "カレーライス", basePrice: 380),
+//        BentoItem(name: "カツカレー", basePrice: 600),
+//        BentoItem(name: "エビカレー", basePrice: 550),
+//        BentoItem(name: "ハンバーグカレー", basePrice: 550),
+//        BentoItem(name: "コロッケカレー", basePrice: 400),
+//        BentoItem(name: "唐揚げカレー", basePrice: 580),
+//        BentoItem(name: "四川麻婆豆腐丼", basePrice: 450),
+//        BentoItem(name: "玉子丼", basePrice: 400),
+//        BentoItem(name: "カツ丼", basePrice: 580),
+//        BentoItem(name: "天丼", basePrice: 550),
+//        BentoItem(name: "親子丼", basePrice: 450),
+//        BentoItem(name: "カルビ丼", basePrice: 500),
+//        BentoItem(name: "中華丼", basePrice: 550),
+//        BentoItem(name: "天津丼", basePrice: 500),
+//        BentoItem(name: "牛丼", basePrice: 480),
+//        BentoItem(name: "豚メンマ丼", basePrice: 450),
+//        BentoItem(name: "エビピラフ", basePrice: 400),
+//        BentoItem(name: "高菜ピラフ", basePrice: 400),
+//        BentoItem(name: "チキンピラフ", basePrice: 400),
+//        BentoItem(name: "ドライカレーピラフ", basePrice: 400),
+//        BentoItem(name: "鮭ご飯", basePrice: 350),
+//        BentoItem(name: "五目ご飯", basePrice: 380),
+        BentoItem(name: "（鮭）おにぎり", abbreviation: "鮭にぎり", basePrice: 100),
+//        BentoItem(name: "（昆布）おにぎり", basePrice: 100),
+//        BentoItem(name: "（しぐれ）おにぎり", basePrice: 100),
+//        BentoItem(name: "（うめ）おにぎり", basePrice: 100),
+//        BentoItem(name: "（たらこ）おにぎり", basePrice: 100),
+//        BentoItem(name: "（おかか）おにぎり", basePrice: 100)
     ]
     
     let customList: [Custom] = [
@@ -116,6 +118,7 @@ struct ContentView: View {
     let customerList: [Customer] = [
         Customer(name: "入力してください"),
         Customer(name: "店内"),
+        Customer(name: "持ち帰り"),
         Customer(name: "日大印刷"),
         Customer(name: "三和"),
         Customer(name: "ジェームス"),
@@ -130,13 +133,114 @@ struct ContentView: View {
         return customerList[selectedCustomerIndex]
     }
     
+    var menuButtons: [GridItem] = Array(repeating: .init(.flexible()), count: 5)
+
+    
     var body: some View {
         NavigationView {
             HStack {
                 if showForm == true {
                     VStack {
-                        Form {
-                            Section(header: Text("Order")) {
+                        Picker("カスタム", selection: $addViewStyle) {
+                            Text("Form").tag(1)
+                            Text("Menu").tag(2)
+                        }.pickerStyle(.segmented)
+                        if addViewStyle == 1 {
+                            Form {
+                                Section(header: Text("Order")) {
+                                    Picker("Customer", selection: $selectedCustomerIndex) {
+                                        ForEach(0..<customerList.count, id: \.self) { index in
+                                            Text(customerList[index].name)
+                                        }
+                                    }
+                                    if selectedCustomer.name == "入力してください" {
+                                        TextField("顧客", text: $newCustomerName)
+                                    }
+                                    Picker("弁当", selection: $selectedBentoIndex) {
+                                        ForEach(0..<bentoList.count, id: \.self) { index in
+                                            Text(bentoList[index].name)
+                                        }
+                                    }
+                                    if selectedBento.name == "その他" {
+                                        TextField("品名", text: $newBentoName)
+                                        TextField("Price", value: $newPrice, formatter: NumberFormatter())
+                                    }
+                                    if selectedBento.name.contains("おにぎり") {
+                                    } else {
+                                        Picker("カスタム", selection: $newSize) {
+                                            ForEach(customList, id: \.name) { custom in
+                                                Text(custom.name)
+                                            }
+                                        }.pickerStyle(.segmented)
+                                    }
+                                    if selectedCustomer.name == "店内"    {
+                                        Text("イートイン　消費税率10％")
+                                    } else if selectedCustomer.name == "持ち帰り" {
+                                        Text("お持ち帰り　消費税率8％")
+                                    } else {
+                                        Toggle("イートイン", isOn: $eatin)
+                                    }
+                                    HStack {
+                                        Stepper("Quantity", value: $newQuantity)
+                                        TextField("",value: $newQuantity, formatter: NumberFormatter()).frame(maxWidth: 50).textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
+                                    HStack {
+                                        TextField("Note", text: $newNote)
+                                        if newNote != "" {
+                                            Button {
+                                                newNote = ""
+                                            } label: {
+                                                Image(systemName: "xmark.circle.fill")
+                                            }.buttonStyle(.plain)
+                                        }
+                                    }
+                                    Button("Add") {
+                                        let currentDate = Date()
+                                        let dateFormatter = DateFormatter()
+                                        dateFormatter.dateFormat = "yyyy-MM-dd"
+                                        recordedDate = dateFormatter.string(from: currentDate)
+                                        recordedDateSmall = dateFormatter.string(from: currentDate)
+                                        if selectedCustomer.name != "入力してください" {
+                                            newCustomerName = selectedCustomer.name
+                                        } else if newCustomerName == "" {
+                                            newCustomerName = "名前なし"
+                                        }
+                                        
+                                        if newCustomerName == "店内" {
+                                            self.eatin = true
+                                        } else if newCustomerName == "持ち帰り" {
+                                            self.eatin = false
+                                        }
+                                        if selectedBento.name != "その他" {
+                                            newBentoName = selectedBento.name
+                                            newPrice = selectedBento.basePrice
+                                        }
+                                        if eatin == true {
+                                            newTaxRate = 10
+                                        } else {
+                                            newTaxRate = 8
+                                        }
+                                        if let selectedCustom = customList.first(where: { $0.name == newSize }) {
+                                            newCustomValue = selectedCustom.value
+                                            newPrice += newCustomValue
+                                        }
+                                        newTotalPrice = newPrice * newQuantity
+                                        let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, size: newSize, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
+                                        saveOrderItem(orderItem: newItem)
+                                        selectedBentoIndex = 0
+                                        newCustomerName = ""
+                                        newBentoName = ""
+                                        newPrice = 0
+                                        newQuantity = 1
+                                        newTotalPrice = 0
+                                        newSize = "普通"
+                                        newCustomValue = 0
+                                        eatin = false
+                                    }.keyboardShortcut(.defaultAction)
+                                }
+                            }
+                        } else {
+                            ScrollView {
                                 Picker("Customer", selection: $selectedCustomerIndex) {
                                     ForEach(0..<customerList.count, id: \.self) { index in
                                         Text(customerList[index].name)
@@ -145,25 +249,71 @@ struct ContentView: View {
                                 if selectedCustomer.name == "入力してください" {
                                     TextField("顧客", text: $newCustomerName)
                                 }
-                                Picker("弁当", selection: $selectedBentoIndex) {
-                                    ForEach(0..<bentoList.count, id: \.self) { index in
-                                        Text(bentoList[index].name)
+                                LazyVGrid(columns: menuButtons) {
+                                    ForEach((bentoList), id: \.name) { bento in
+                                        if selectedBentoMenu == bento.name {
+                                            Button {
+                                                selectedBentoMenu = "ランチ"
+                                                newPrice = 380
+                                                print("A")
+                                            } label: {
+                                                ZStack {
+                                                    Capsule().stroke(Color.red, lineWidth: 5).frame(width:100, height: 70)
+                                                    Text(bento.abbreviation).font(.title3).padding()
+                                                }
+                                            }
+                                        } else {
+                                            Button {
+                                                selectedBentoMenu = bento.name
+                                                newPrice = bento.basePrice
+                                                print(bento.basePrice)
+                                            } label: {
+                                                ZStack {
+                                                    Capsule().stroke(Color.blue, lineWidth: 5).frame(width:100, height: 70)
+                                                    Text(bento.abbreviation).font(.title3).padding()
+                                                }
+                                            }
+                                        }
                                     }
+                                }.font(.largeTitle).onAppear {
+                                    selectedBentoMenu = "ランチ"
+                                    newPrice = 380
                                 }
-                                if selectedBento.name == "その他" {
+                                if selectedBentoMenu == "その他" {
                                     TextField("品名", text: $newBentoName)
                                     TextField("Price", value: $newPrice, formatter: NumberFormatter())
                                 }
-                                if selectedBento.name.contains("おにぎり") {
+                                Divider()
+                                if selectedBentoMenu.contains("おにぎり") {
                                 } else {
-                                    Picker("カスタム", selection: $newSize) {
+                                    LazyVGrid(columns: menuButtons) {
                                         ForEach(customList, id: \.name) { custom in
-                                            Text(custom.name)
+                                            if newSize == custom.name {
+                                                Button {
+                                                    newSize = "普通"
+                                                } label: {
+                                                    ZStack {
+                                                        Capsule().stroke(Color.red, lineWidth: 5).frame(width:100, height: 70)
+                                                        Text(custom.name).font(.title3).padding()
+                                                    }
+                                                }
+                                            } else {
+                                                Button {
+                                                    newSize = custom.name
+                                                } label: {
+                                                    ZStack {
+                                                        Capsule().stroke(Color.blue, lineWidth: 5).frame(width:100, height: 70)
+                                                        Text(custom.name).font(.title3).padding()
+                                                    }
+                                                }
+                                            }
                                         }
-                                    }.pickerStyle(.segmented)
+                                    }
                                 }
-                                if selectedCustomer.name == "店内" {
+                                if selectedCustomer.name == "店内"    {
                                     Text("イートイン　消費税率10％")
+                                } else if selectedCustomer.name == "持ち帰り" {
+                                    Text("お持ち帰り　消費税率8％")
                                 } else {
                                     Toggle("イートイン", isOn: $eatin)
                                 }
@@ -195,10 +345,11 @@ struct ContentView: View {
                                     
                                     if newCustomerName == "店内" {
                                         self.eatin = true
+                                    } else if newCustomerName == "持ち帰り" {
+                                        self.eatin = false
                                     }
-                                    if selectedBento.name != "その他" {
-                                        newBentoName = selectedBento.name
-                                        newPrice = selectedBento.basePrice
+                                    if selectedBentoMenu != "その他" {
+                                        newBentoName = selectedBentoMenu
                                     }
                                     if eatin == true {
                                         newTaxRate = 10
@@ -215,12 +366,13 @@ struct ContentView: View {
                                     selectedBentoIndex = 0
                                     newCustomerName = ""
                                     newBentoName = ""
-                                    newPrice = 0
                                     newQuantity = 1
                                     newTotalPrice = 0
                                     newSize = "普通"
                                     newCustomValue = 0
                                     eatin = false
+                                    selectedBentoMenu = "ランチ"
+                                    newPrice = 380
                                 }.keyboardShortcut(.defaultAction)
                             }
                         }
@@ -564,6 +716,7 @@ struct OrderItem: Identifiable, Decodable, Encodable {
 
 struct BentoItem {
     var name: String
+    var abbreviation: String
     var basePrice: Int
 }
 
