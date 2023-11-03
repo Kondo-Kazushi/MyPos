@@ -154,11 +154,14 @@ struct ContentView: View {
                                     TextField("品名", text: $newBentoName)
                                     TextField("Price", value: $newPrice, formatter: NumberFormatter())
                                 }
-                                Picker("カスタム", selection: $newSize) {
-                                    ForEach(customList, id: \.name) { custom in
-                                        Text(custom.name)
-                                    }
-                                }.pickerStyle(.segmented)
+                                if selectedBento.name.contains("おにぎり") {
+                                } else {
+                                    Picker("カスタム", selection: $newSize) {
+                                        ForEach(customList, id: \.name) { custom in
+                                            Text(custom.name)
+                                        }
+                                    }.pickerStyle(.segmented)
+                                }
                                 if selectedCustomer.name == "店内" {
                                     Text("イートイン　消費税率10％")
                                 } else {
@@ -203,9 +206,9 @@ struct ContentView: View {
                                         newTaxRate = 8
                                     }
                                     if let selectedCustom = customList.first(where: { $0.name == newSize }) {
-                                            newCustomValue = selectedCustom.value
-                                            newPrice += newCustomValue
-                                        }
+                                        newCustomValue = selectedCustom.value
+                                        newPrice += newCustomValue
+                                    }
                                     newTotalPrice = newPrice * newQuantity
                                     let newItem = OrderItem(date: recordedDate, customer: newCustomerName, name: newBentoName, size: newSize, quantity: newQuantity, price: newPrice, taxRate: newTaxRate, tax: newTax, totalPrice: newTotalPrice, note: newNote)
                                     saveOrderItem(orderItem: newItem)
@@ -217,6 +220,7 @@ struct ContentView: View {
                                     newTotalPrice = 0
                                     newSize = "普通"
                                     newCustomValue = 0
+                                    eatin = false
                                 }.keyboardShortcut(.defaultAction)
                             }
                         }
@@ -360,6 +364,9 @@ struct ContentView: View {
                                         }
                                         TableColumn("Total") { order in
                                             Text("\(order.totalPrice)")
+                                        }
+                                        TableColumn("Tax") { order in
+                                            Text("\(order.taxRate)")
                                         }
                                         TableColumn("Note") { order in
                                             Text("\(order.note)")
