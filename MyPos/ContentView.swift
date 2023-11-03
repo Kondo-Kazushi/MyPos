@@ -266,6 +266,9 @@ struct ContentView: View {
                                         TableColumn("Total") { order in
                                             Text("\(order.totalPrice)")
                                         }
+                                        TableColumn("Tax") { order in
+                                            Text("\(order.taxRate)")
+                                        }
                                         TableColumn("Note") { order in
                                             Text("\(order.note)")
                                         }
@@ -314,17 +317,21 @@ struct ContentView: View {
                                             Text("税金")
                                             Text("税込価格")
                                         }
-                                        GridRow {
-                                            Text("8%")
-                                            Text("\(tax8notInclude)")
-                                            Text(String(format: "%.1f", tax8))
-                                            Text("\(tax8include)")
+                                        if tax8include != 0 {
+                                            GridRow {
+                                                Text("8%")
+                                                Text("\(tax8notInclude)")
+                                                Text(String(format: "%.1f", tax8))
+                                                Text("\(tax8include)")
+                                            }
                                         }
-                                        GridRow {
-                                            Text("10%")
-                                            Text("\(tax10notInclude)")
-                                            Text(String(format: "%.1f", tax10))
-                                            Text("\(tax10include)")
+                                        if tax10include != 0 {
+                                            GridRow {
+                                                Text("10%")
+                                                Text("\(tax10notInclude)")
+                                                Text(String(format: "%.1f", tax10))
+                                                Text("\(tax10include)")
+                                            }
                                         }
                                     }.padding().font(.title3)
                                 }.onAppear {
@@ -372,6 +379,37 @@ struct ContentView: View {
                                             Text("\(order.note)")
                                         }
                                     }
+                                    Grid {
+                                        GridRow {
+                                            Text("税率")
+                                            Text("税抜価格")
+                                            Text("税金")
+                                            Text("税込価格")
+                                        }
+                                        if tax8include != 0 {
+                                            GridRow {
+                                                Text("8%")
+                                                Text("\(tax8notInclude)")
+                                                Text(String(format: "%.1f", tax8))
+                                                Text("\(tax8include)")
+                                            }
+                                        }
+                                        if tax10include != 0 {
+                                            GridRow {
+                                                Text("10%")
+                                                Text("\(tax10notInclude)")
+                                                Text(String(format: "%.1f", tax10))
+                                                Text("\(tax10include)")
+                                            }
+                                        }
+                                    }.padding().font(.title3)
+                                }.onAppear {
+                                    tax8include = orderItems.filter { $0.taxRate == 8 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax8 = Double(tax8include) * 1.08 - Double(tax8include)
+                                    tax8notInclude = tax8include - Int(tax8)
+                                    tax10include = orderItems.filter { $0.taxRate == 10 && $0.customer == order.customer }.reduce(0) { $0 + $1.totalPrice }
+                                    tax10 = Double(tax10include) * 1.1 - Double(tax10include)
+                                    tax10notInclude = tax10include - Int(tax10)
                                 }
                             } label: {
                                 Text(order.name).bold()
