@@ -3,8 +3,9 @@ import SwiftUI
 struct ContentView: View {
     @State private var showForm: Bool = true
     @State private var orderItems: [OrderItem] = []
+    @State private var userCustomerList: [String] = []
+    @State private var newSelectedCustomer = "入力してください"
     @State private var newCustomerName = ""
-    @State private var selectedCustomerIndex = 0
     @State private var newBentoName = ""
     @State private var selectedBentoIndex = 0
     @State private var newSize = "普通"
@@ -24,8 +25,11 @@ struct ContentView: View {
     @State private var tax8: Double = 0.0
     @State private var tax8include = 0
     @State private var tax8notInclude = 0
-    @State private var addViewStyle = 1
+    @AppStorage("viewStyle") var addViewStyle = 1
     @State private var selectedBentoMenu = "ランチ" //MenuViewOnly
+    
+    @State private var showSettings: Bool = false
+    
     
     let bentoList: [BentoItem] = [
         BentoItem(name: "ランチ", abbreviation: "ランチ", basePrice: 380),
@@ -115,22 +119,8 @@ struct ContentView: View {
         Custom(name: "両大", value: 150)
     ]
     
-    let customerList: [Customer] = [
-        Customer(name: "入力してください"),
-        Customer(name: "店内"),
-        Customer(name: "持ち帰り"),
-        Customer(name: "日大印刷"),
-        Customer(name: "三和"),
-        Customer(name: "ジェームス"),
-        Customer(name: "おにぎりおじさん")
-    ]
-    
     var selectedBento: BentoItem {
         return bentoList[selectedBentoIndex]
-    }
-    
-    var selectedCustomer: Customer {
-        return customerList[selectedCustomerIndex]
     }
     
     var menuButtons: [GridItem] = Array(repeating: .init(.flexible()), count: 5)
@@ -149,14 +139,15 @@ struct ContentView: View {
                             VStack {
                                 Form {
                                     Section(header: Text("Order")) {
-                                        Picker("Customer", selection: $selectedCustomerIndex) {
-                                            ForEach(0..<customerList.count, id: \.self) { index in
-                                                Text(customerList[index].name)
+                                        Picker("Customer", selection: $newSelectedCustomer) {
+                                            ForEach(userCustomerList, id: \.self) { index in
+                                                Text(index)
                                             }
                                         }
-                                        if selectedCustomer.name == "入力してください" {
+                                        if newSelectedCustomer == "入力してください" {
                                             TextField("顧客", text: $newCustomerName)
                                         }
+                                        
                                         Picker("弁当", selection: $selectedBentoIndex) {
                                             ForEach(0..<bentoList.count, id: \.self) { index in
                                                 Text(bentoList[index].name)
@@ -174,9 +165,9 @@ struct ContentView: View {
                                                 }
                                             }.pickerStyle(.segmented)
                                         }
-                                        if selectedCustomer.name == "店内"    {
+                                        if newSelectedCustomer == "店内"    {
                                             Text("イートイン　消費税率10％")
-                                        } else if selectedCustomer.name == "持ち帰り" {
+                                        } else if newSelectedCustomer == "持ち帰り" {
                                             Text("お持ち帰り　消費税率8％")
                                         } else {
                                             Toggle("イートイン", isOn: $eatin)
@@ -201,17 +192,17 @@ struct ContentView: View {
                                             dateFormatter.dateFormat = "yyyy-MM-dd"
                                             recordedDate = dateFormatter.string(from: currentDate)
                                             recordedDateSmall = dateFormatter.string(from: currentDate)
-                                            if selectedCustomer.name != "入力してください" {
-                                                newCustomerName = selectedCustomer.name
+                                            if newSelectedCustomer != "入力してください" {
+                                                newCustomerName = newSelectedCustomer
                                             } else if newCustomerName == "" {
                                                 newCustomerName = "名前なし"
                                             }
-                                            
                                             if newCustomerName == "店内" {
                                                 self.eatin = true
                                             } else if newCustomerName == "持ち帰り" {
                                                 self.eatin = false
                                             }
+                                            
                                             if selectedBento.name != "その他" {
                                                 newBentoName = selectedBento.name
                                                 newPrice = selectedBento.basePrice
@@ -230,6 +221,7 @@ struct ContentView: View {
                                             saveOrderItem(orderItem: newItem)
                                             selectedBentoIndex = 0
                                             newCustomerName = ""
+                                            newSelectedCustomer = "入力してください"
                                             newBentoName = ""
                                             newPrice = 0
                                             newQuantity = 1
@@ -250,12 +242,12 @@ struct ContentView: View {
                         } else {
                             ScrollView {
                                 HStack {
-                                    Picker("Customer", selection: $selectedCustomerIndex) {
-                                        ForEach(0..<customerList.count, id: \.self) { index in
-                                            Text(customerList[index].name)
+                                    Picker("Customer", selection: $newSelectedCustomer) {
+                                        ForEach(userCustomerList, id: \.self) { index in
+                                            Text(index).font(.title)
                                         }
                                     }
-                                    if selectedCustomer.name == "入力してください" {
+                                    if newSelectedCustomer == "入力してください" {
                                         TextField("顧客", text: $newCustomerName).textFieldStyle(RoundedBorderTextFieldStyle())
                                     } else {
                                         Spacer()
@@ -319,7 +311,7 @@ struct ContentView: View {
                                 }.padding()
                                 Divider()
                                 HStack {
-                                    if selectedCustomer.name == "お持ち帰り" {
+                                    if newSelectedCustomer == "お持ち帰り" {
                                         ZStack {
                                             Capsule().stroke(Color.red, lineWidth: 5).frame(height: 70)
                                             Text("お持ち帰り 8％").font(.title3).padding()
@@ -328,7 +320,7 @@ struct ContentView: View {
                                             Capsule().stroke(Color.gray, lineWidth: 5).frame(height: 70)
                                             Text("店内 10%").font(.title3).padding()
                                         }
-                                    } else if selectedCustomer.name == "店内" {
+                                    } else if newSelectedCustomer == "店内" {
                                         ZStack {
                                             Capsule().stroke(Color.gray, lineWidth: 5).frame(height: 70)
                                             Text("お持ち帰り 8％").font(.title3).padding()
@@ -395,8 +387,8 @@ struct ContentView: View {
                                     dateFormatter.dateFormat = "yyyy-MM-dd"
                                     recordedDate = dateFormatter.string(from: currentDate)
                                     recordedDateSmall = dateFormatter.string(from: currentDate)
-                                    if selectedCustomer.name != "入力してください" {
-                                        newCustomerName = selectedCustomer.name
+                                    if newSelectedCustomer != "入力してください" {
+                                        newCustomerName = newSelectedCustomer
                                     } else if newCustomerName == "" {
                                         newCustomerName = "名前なし"
                                     }
@@ -446,6 +438,12 @@ struct ContentView: View {
                         }.toggleStyle(.button)
                         Text("Order")
                         Spacer()
+                        Button {
+                            self.showSettings = true
+                        } label: {
+                            Image(systemName: "gear")
+                        }
+                        
                     }.padding()
                     Table(orderItems) {
                         TableColumn("Date") { order in
@@ -708,9 +706,13 @@ struct ContentView: View {
                 }
                 
             }.onAppear {
+                loadUserCustomer()
                 loadOrderItems()
             }
         }.navigationViewStyle(.stack).navigationTitle("Order")
+            .sheet(isPresented: $showSettings) {
+                SettingsView(userCustomerList: $userCustomerList)
+            }
     }
     
     //MARK: Func
@@ -751,8 +753,105 @@ struct ContentView: View {
         }
     }
     
+    func loadUserCustomer() {
+        userCustomerList = UserDefaults.standard.stringArray(forKey: "userCustomerList") ?? []
+    }
+}
+
+//MARK: 設定
+struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var newCustomerName = ""
+    @Binding var userCustomerList: [String]
+    @FocusState var input: Bool
     
+    var body: some View {
+        NavigationStack {
+            VStack {
+                List {
+                    NavigationLink {
+                        VStack {
+                            HStack {
+                                TextField("名前を入力", text: $newCustomerName).focused($input).textFieldStyle(RoundedBorderTextFieldStyle())
+                                Button("保存") {
+                                    saveCustomer()
+                                }.keyboardShortcut(.defaultAction).onSubmit {
+                                    self.input = true
+                                }
+                            }.onAppear {
+                                self.input = true
+                            }
+                            List {
+                                ForEach(userCustomerList, id: \.self) { customer in
+                                    HStack {
+                                        Text(customer)
+                                        Spacer()
+                                        if customer == "入力してください" {
+                                            Text("削除").foregroundStyle(Color.gray)
+                                        } else if customer == "店内" {
+                                            Text("削除").foregroundStyle(Color.gray)
+                                        } else if customer == "お持ち帰り" {
+                                            Text("削除").foregroundStyle(Color.gray)
+                                        } else {
+                                            Button("削除") {
+                                                deleteCustomer(customer)
+                                            }.foregroundColor(.red)
+                                        }
+                                        
+                                    }
+                                }
+                            }
+                            Button("リセットする") {
+                                userCustomerList.removeAll()
+                                userCustomerList.append("入力してください")
+                                userCustomerList.append("店内")
+                                userCustomerList.append("お持ち帰り")
+                                UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+                            }
+                        }.padding()
+                        
+                    } label: {
+                        Text("顧客リスト")
+                    }
+                }
+            }
+            .padding()
+            .navigationTitle("情報")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }.bold()
+                }
+            }
+        }
+    }
+    func saveCustomer() {
+        guard !newCustomerName.isEmpty else { return }
+        userCustomerList.append(newCustomerName)
+        UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+        
+        newCustomerName = ""
+    }
     
+    func deleteCustomer(_ name: String) {
+        if userCustomerList.count == 1 {
+            userCustomerList.append("入力してください")
+            userCustomerList.append("店内")
+            userCustomerList.append("お持ち帰り")
+            UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+            if let index = userCustomerList.firstIndex(of: name) {
+                userCustomerList.remove(at: index)
+                UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+            }
+        } else {
+            if let index = userCustomerList.firstIndex(of: name) {
+                userCustomerList.remove(at: index)
+                UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+            }
+        }
+    }
 }
 
 struct OrderItem: Identifiable, Decodable, Encodable {
@@ -773,10 +872,6 @@ struct BentoItem {
     var name: String
     var abbreviation: String
     var basePrice: Int
-}
-
-struct Customer {
-    var name: String
 }
 
 struct Custom {
