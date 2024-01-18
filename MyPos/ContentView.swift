@@ -706,6 +706,12 @@ struct ContentView: View {
                 }
                 
             }.onAppear {
+                if userCustomerList == [] {
+                    userCustomerList.append("入力してください")
+                    userCustomerList.append("店内")
+                    userCustomerList.append("お持ち帰り")
+                    UserDefaults.standard.set(userCustomerList, forKey: "userCustomerList")
+                }
                 loadUserCustomer()
                 loadOrderItems()
             }
