@@ -253,6 +253,10 @@ struct ContentView: View {
                                         Spacer()
                                     }
                                 }.font(.title)
+                                if selectedBentoMenu == "その他" {
+                                    TextField("品名", text: $newBentoName).textFieldStyle(RoundedBorderTextFieldStyle())
+                                    TextField("Price", value: $newPrice, formatter: NumberFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
+                                }
                                 LazyVGrid(columns: menuButtons) {
                                     ForEach((bentoList), id: \.name) { bento in
                                         if selectedBentoMenu == bento.name {
@@ -281,10 +285,6 @@ struct ContentView: View {
                                     selectedBentoMenu = "ランチ"
                                     newPrice = 380
                                 }.padding()
-                                if selectedBentoMenu == "その他" {
-                                    TextField("品名", text: $newBentoName)
-                                    TextField("Price", value: $newPrice, formatter: NumberFormatter())
-                                }
                                 Divider()
                                 LazyVGrid(columns: menuButtons) {
                                     ForEach(customList, id: \.name) { custom in
